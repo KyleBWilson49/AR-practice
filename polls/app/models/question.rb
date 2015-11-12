@@ -26,4 +26,33 @@ class Question < ActiveRecord::Base
   has_many :responses,
     through: :answer_choices,
     source: :responses
+
+  def results
+    # choices = answer_choices.includes(:responses)
+    # p "test"
+    results = {}
+    # choices.each do |choice|
+    #   results[choice.choice] = choice.responses.length
+    # end
+    # results
+    choices = AnswerChoice.find_by_sql([<<-SQL, id])
+      SELECT
+        answer_choices.choice,
+        COUNT(responses.user_id) as total
+      FROM
+        answer_choices
+      LEFT OUTER JOIN
+        responses ON answer_choices.id = responses.answer_choice_id
+      WHERE
+        answer_choices.question_id = ?
+      GROUP BY
+        answer_choices.choice
+    SQL
+
+    choices.each do |choice|
+      results[choice.choice] = choice.total
+    end
+
+    results
+  end
 end
