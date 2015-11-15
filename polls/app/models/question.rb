@@ -28,32 +28,23 @@ class Question < ActiveRecord::Base
     source: :responses
 
   def results
-    self.answer_choices.select(answer_choices).joins(responses).group(answer_choices)
-    # choices = answer_choices.includes(:responses)
-    # p "test"
+    # N+1 way:
     # results = {}
-    # # choices.each do |choice|
-    # #   results[choice.choice] = choice.responses.length
-    # # end
-    # # results
-    # choices = AnswerChoice.find_by_sql([<<-SQL, id])
-    #   SELECT
-    #     answer_choices.choice,
-    #     COUNT(responses.user_id) as total
-    #   FROM
-    #     answer_choices
-    #   LEFT OUTER JOIN
-    #     responses ON answer_choices.id = responses.answer_choice_id
-    #   WHERE
-    #     answer_choices.question_id = ?
-    #   GROUP BY
-    #     answer_choices.choice
-    # SQL
-    #
-    # choices.each do |choice|
-    #   results[choice.choice] = choice.total
+    # self.answer_choices.each do |answer_choice|
+    #   results[answer_choice.text] = answer_choice.responses.count
     # end
-    #
     # results
+
+    # 2-queries; all responses transferred:
+    # results = {}
+    # self.answer_choices.includes(:responses).eanswer_choiceh do |answer_choice|
+    #   results[answer_choice.text] = answer_choice.responses.length
+    # end
+    # results
+
+    # 1-query way
+    answer_choices = self.answer_choices
+      .select("answer_choices.*, COUNT(responses.id) AS num_responses")
+      .joins(<<-SQL).group("answer_choices.id")
   end
 end

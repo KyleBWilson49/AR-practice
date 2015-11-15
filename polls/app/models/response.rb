@@ -30,11 +30,7 @@ class Response < ActiveRecord::Base
     source: :question
 
   def sibling_responses
-    # if id
-      question.responses.where(":id IS NULL OR responses.id != :id", id: id)
-    # else
-    #   question.responses
-    # end
+    question.responses.where(":id IS NULL OR responses.id != :id", id: id)
   end
 
   private
